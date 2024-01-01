@@ -1,0 +1,3 @@
+/home/cgoldbe5/UTF8-C-Encoding/utf8/cmake-build-debug/CMakeFiles/utf8.dir
+/home/cgoldbe5/UTF8-C-Encoding/utf8/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/cgoldbe5/UTF8-C-Encoding/utf8/cmake-build-debug/CMakeFiles/rebuild_cache.dir
