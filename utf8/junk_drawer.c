@@ -123,3 +123,27 @@ int EOS(unsigned char c) {
 //    }//end while
 //    return count;
 //}// end my_utf8_hebrew
+
+
+/// INCORRECT COUNTING
+//// Given a UTF8 encoded Hebrew string, return the corresponding gematria
+//int my_utf8_gematria_encode(unsigned char *input){
+//    int byte2, base = 0x8F, ch, count = 1;
+//    static int offset = 0;
+//    // Loop through the string
+//    if (*input != '\0') {
+//        // Make sure input is within the range {0xD7, 0x90} - {0xD7, 0xAF}
+//        if (my_utf8_check(input) == 0) return 0;
+//        if (my_utf8_numbytes(input) != 2) return 0;
+//        byte2 = *(input+1);
+//        printf("0x%x\n", byte2);
+//        if ((*input < 0xD7) && (byte2 < 0x90 || byte2 > 0xAF)) return 0;
+//
+//        ch = byte2 - base - offset;
+//        for (int i = 1; i < ch; i++) {
+//            count++;
+//            if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) count-=1;
+//        }
+//    }//end if
+//    return count;
+//}// end my_utf8_hebrew

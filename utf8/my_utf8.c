@@ -438,7 +438,7 @@ int my_utf8_gematria_decode(int g, unsigned char *output){
 
 // Given a UTF8 encoded Hebrew string, return the corresponding gematria
 int my_utf8_gematria_encode(unsigned char *input){
-    int byte2, base = 0x8F, ch, count = 1;
+    int byte2, base = 0x8F, ch, count = 1, incr = 1;
     static int offset = 0;
     // Loop through the string
     if (*input != '\0') {
@@ -451,9 +451,18 @@ int my_utf8_gematria_encode(unsigned char *input){
 
         ch = byte2 - base - offset;
         for (int i = 1; i < ch; i++) {
-            count++;
-            if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) count-=1;
-        }
+            count += incr;
+            if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) count-=incr;
+            if (count == 11) {
+                count = 20;
+                incr = 10;
+            }
+            if (count == 100) {
+                count = 200;
+                incr = 100;
+            }
+        }//end for
+
     }//end if
     return count;
 }// end my_utf8_hebrew
@@ -848,12 +857,21 @@ int my_utf8_gematria_encode_tests(void) {
     // Initialize the base UTF8 character, Aleph
     char base[3] = {0xD7, 0x90, 0x0};
     // Test for the aleph-bet
-    int g = 1;
+    int g = 1, incr = 1;
     for (int i = 1; i < 28; i++) {
         test_my_utf8_gematria_encode(base, g);
-        base[1]++; g++;
-        if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) g-=1;
-    }//end test
+        base[1]++; g += incr;
+        if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) g-=incr;
+        if (g == 11) {
+            g = 20;
+            incr = 10;
+        }
+        if (g == 100) {
+            g = 200;
+            incr = 100;
+        }
+    }//end for
+
     // Test for invalid index
     test_my_utf8_gematria_encode("Hello", 0);
     test_my_utf8_gematria_encode("A", 0);
