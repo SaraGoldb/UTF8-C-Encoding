@@ -152,6 +152,30 @@ my_utf8.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utf8.dir\build.make CMakeFiles/utf8.dir/my_utf8.c.s
 .PHONY : my_utf8.c.s
 
+playground.obj: playground.c.obj
+.PHONY : playground.obj
+
+# target to build an object file
+playground.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utf8.dir\build.make CMakeFiles/utf8.dir/playground.c.obj
+.PHONY : playground.c.obj
+
+playground.i: playground.c.i
+.PHONY : playground.i
+
+# target to preprocess a source file
+playground.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utf8.dir\build.make CMakeFiles/utf8.dir/playground.c.i
+.PHONY : playground.c.i
+
+playground.s: playground.c.s
+.PHONY : playground.s
+
+# target to generate assembly for a file
+playground.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utf8.dir\build.make CMakeFiles/utf8.dir/playground.c.s
+.PHONY : playground.c.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -164,6 +188,9 @@ help:
 	@echo ... my_utf8.obj
 	@echo ... my_utf8.i
 	@echo ... my_utf8.s
+	@echo ... playground.obj
+	@echo ... playground.i
+	@echo ... playground.s
 .PHONY : help
 
 

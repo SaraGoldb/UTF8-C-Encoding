@@ -5,7 +5,10 @@
 #include <stdio.h>
 
 int main() {
-    printf("\n");
+    unsigned char aleph[3] = {0xD7, 0x90, 0x0};
+    unsigned char *ptr = aleph;
+    unsigned int next = *(ptr+1);
+    printf("%s %X, %d\n", aleph, next, next < 0x90 || next > 0xAF);
     return 0;
 }
 
@@ -73,3 +76,50 @@ int my_utf8_hello(){
 int EOS(unsigned char c) {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\0');
 } //end EOS
+
+//unsigned char *my_utf8_charat(unsigned char *string, int index) {
+//    // If index is out of range return NULL
+//    if ((index >= my_utf8_strlen(string)) || (index < 0))
+//        return NULL;
+//
+//    unsigned char output[7];
+//    // increment string to point to the index position of the character we want to return
+//    string += index;
+//    // Determine the number of bytes and append the correct amount of bytes to output
+//    int bytes = my_utf8_numbytes(string);  // What a helpful function!!
+//    printf("bytes %d\n", bytes);
+//    int i = 0;
+//    while (i <= bytes) {
+//        output[i++] = *string++;
+//        printf("output %s  c %c 0x%X\n", output, *string, *string);
+//    }
+//    // Terminate output string and return a pointer to it
+//    printf("i %d output %s\n", i, output);
+//    output[i] = '\0';
+//    unsigned char *ptr = output;
+//    return ptr;
+//}
+
+//
+//// Given a UTF8 encoded Hebrew string, return the corresponding gematria
+//int my_utf8_gematria_encode(unsigned char *input){
+//    int byte2, base = 0x8F, ch, count = 1;
+//    static int offset = 0;
+//    // Loop through the string
+//    while (*input != '\0') {
+//        // Make sure input is within the range {0xD7, 0x90} - {0xD7, 0xAF}
+//        if (my_utf8_check(input) == 0) return 0;
+//        if (my_utf8_numbytes(input) != 2) return 0;
+//        byte2 = *(input+1);
+//        printf("0x%x\n", byte2);
+//        if ((*input < 0xD7) && (byte2 < 0x90 || byte2 > 0xAF)) return 0;
+//
+//        ch = byte2 - base - offset;
+//        for (int i = 1; i < ch; i++) {
+//            count++;
+//            if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) count-=1;
+//        }
+//        input += 2;
+//    }//end while
+//    return count;
+//}// end my_utf8_hebrew

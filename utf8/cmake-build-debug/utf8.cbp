@@ -79,6 +79,9 @@
 		<Unit filename="C:/Users/chaya/GitHub/UTF8-C-Encoding/utf8/my_utf8.c">
 			<Option target="utf8"/>
 		</Unit>
+		<Unit filename="C:/Users/chaya/GitHub/UTF8-C-Encoding/utf8/playground.c">
+			<Option target="utf8"/>
+		</Unit>
 		<Unit filename="C:/Users/chaya/GitHub/UTF8-C-Encoding/utf8/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
