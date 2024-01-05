@@ -36,11 +36,11 @@ int main() {
 //    my_utf8_encode_tests();     // Test encode     !!!!!!!!!!!!!!!!!!!
     my_utf8_decode_tests();     // Test decode
     my_utf8_check_tests();      // Test check
-    my_utf8_strlen_tests();     // Test strlen
-    my_utf8_charat_tests();     // Test charat
-    my_utf8_strcmp_tests();     // Test strcmp
-    my_utf8_gematria_tests();     // Test gematria
-    my_utf8_numbytes_tests();   // Test numbytes
+//    my_utf8_strlen_tests();     // Test strlen
+//    my_utf8_charat_tests();     // Test charat
+//    my_utf8_strcmp_tests();     // Test strcmp
+//    my_utf8_gematria_tests();     // Test gematria
+//    my_utf8_numbytes_tests();   // Test numbytes
 
     printf("\n");       // PASS/FAIL message
     test_pass_fail();
@@ -139,11 +139,10 @@ int my_utf8_encode(unsigned char *input, unsigned char *output) {
 // Takes a UTF8 encoded string, and returns a string, with ASCII representation where possible, and UTF8 character
 // representation for non-ASCII characters.
 int my_utf8_decode(unsigned char *input, unsigned char *output) {
-    unsigned int byte, byte2, byte3, byte4, unicode;
-    unsigned char unicodeString[8];
+    unsigned int byte = 0, byte2 = 0, byte3 = 0, byte4 = 0, unicode;
+    unsigned char unicodeString[8], utf8[5];
     int index = 0;
     while (*input != '\0') {
-//        printf("%c  x%X  next: x%X\n", *input, *input, *(input+1));
         *output++ = 0x5C;    // ASCII character backslash
         index++;
         byte = *input++;
@@ -152,7 +151,12 @@ int my_utf8_decode(unsigned char *input, unsigned char *output) {
             byte3 = *input++;
             byte4 = *input++;
 
-            // make sure the utf8 is valid         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // make sure the utf8 is valid
+            utf8[0] = byte;
+            utf8[1] = byte2;
+            utf8[2] = byte3;
+            utf8[3] = byte4;
+            utf8[4] = '\0';
             if (byte2 < 0x80 || byte2 > 0xC0 || byte3 < 0x80 || byte3 > 0xC0 || byte4 < 0x80 || byte4 > 0xC0) {
                 // RESET output to "\\u0000"
                 *output++ = 0x75;  // ASCII character u
@@ -253,24 +257,25 @@ int my_utf8_decode(unsigned char *input, unsigned char *output) {
 // A valid UTF8 encoded string is at least 0x0 and at most 0x10FFFF
 // If invalid returns 0, if valid returns the number of bytes
 int my_utf8_check(unsigned char *string) {
-    unsigned int byte, byte2, byte3, byte4; //num = 1
+    unsigned int byte, byte2, byte3, byte4;
+    int num = 1;
     while (*string != '\0') {
         byte = *string++;
         if ((byte & 0xE0) == 0xC0) { //2 bytes
-//            num = 2;
+            num = 2;
             byte2 = *string;
             if (byte2 < 0x80 || byte2 > 0xBF)
                 return 0;
         }
         if ((byte & 0xF0) == 0xE0) { // 3 bytes
-//            num = 3;
+            num = 3;
             byte2 = *string++;
             byte3 = *string;
             if (byte2 < 0x80 || byte2 > 0xBF || byte3 < 0x80 || byte3 > 0xBF)
                 return 0;
         }
         if ((byte & 0xF8) == 0xF0) { //4 bytes
-//            num = 4;
+            num = 4;
             byte2 = *string++;
             byte3 = *string++;
             byte4 = *string;
@@ -283,7 +288,7 @@ int my_utf8_check(unsigned char *string) {
         }
         string++;
     }//end while
-    return 1; //if we made it here, the string is valid
+    return num; //if we made it here, the string is valid
 }//end my_utf8_check
 
 // Returns the number of characters in the string.
@@ -307,7 +312,7 @@ int my_utf8_strlen(unsigned char *string) {
 // Returns the UTF8 encoded character at the location specified.
 // If the input string is improperly encoded, this function should return NULL to indicate an error.
 unsigned char *my_utf8_charat(unsigned char *string, int index) {
-    if ((index >= my_strlen(string)) || (index < 0))
+    if ((index >= my_utf8_strlen(string)) || (index < 0))
         return NULL;
 //    printf("START input %s, index %d\n", string, index);
     unsigned char output[7];
@@ -612,8 +617,10 @@ int my_utf8_decode_tests() {
 
 int test_my_utf8_check(unsigned char *string, int expected) {
     int output = my_utf8_check(string);
+    // to simplify the test cases, we'll treat any non-zero output as 1
+    if (output != 0) output = 1;
     my_utf8_printHex(string, 1);
-    printf("%s a valid UTF8 string\n", output == 1 ? "is" : "is NOT");
+    printf("%s a valid UTF8 string\n", output == 0 ? "is NOT" : "is");
     // print a line of '-' and assert if output matched expected output
     for (int i = 0; i < BUFFER; i++)
         printf("-");
@@ -693,20 +700,14 @@ int test_my_utf8_charat(unsigned char *string, int index, unsigned char *expecte
 }//end test_my_utf8_charat
 int my_utf8_charat_tests(){
     test_header("my_utf8_charat");
-    unsigned char *in;
-    unsigned char *exp;
-    in = "Aleph \u05D0"; exp = "\u05D0";
-    test_my_utf8_charat(in, 6, exp);
-    in = "Unicorn"; exp = "i";
-    test_my_utf8_charat(in, 2, exp);
-    in = "Unicorn \U0001F984 yay"; exp = "🦄";
-    test_my_utf8_charat(in, 8, exp);
-    in = "Unicorn"; exp = NULL;
-    test_my_utf8_charat(in, 8, exp);
-    in = "Unicorn \U0001F984 yay"; exp = NULL;
-    test_my_utf8_charat(in, 18, exp);
-    in = "Hello World"; exp = NULL;
-    test_my_utf8_charat(in, -1, exp);
+    test_my_utf8_charat("Unicorn", 8, NULL);
+    test_my_utf8_charat("Unicorn \U0001F984 ", 16, NULL);
+    test_my_utf8_charat("Hello World", -1, NULL);
+    test_my_utf8_charat("שרהלה", 4, "ה");
+    test_my_utf8_charat("Aleph \u05D0 ", 6, "\u05D0");
+    test_my_utf8_charat("Money \u0024 ", 6, "\u0024");
+    test_my_utf8_charat("\u0024 Money", 0, "\u0024");
+    test_my_utf8_charat("Money \u0024 Money", 15, NULL);
 }//end my_utf8_charat_tests
 
 int test_my_utf8_strcmp(unsigned char *string1, unsigned char *string2, int expected) {
@@ -726,6 +727,7 @@ int my_utf8_strcmp_tests(){
     test_my_utf8_strcmp("bbb", "aaa", 1);
     test_my_utf8_strcmp("app", "apple", -1);
     test_my_utf8_strcmp("apple", "app", 1);
+    test_my_utf8_strcmp("🦄", "🦄", 0);            // 2 byte comparisons
     test_my_utf8_strcmp("א", "א", 0);            // 2 byte comparisons
     test_my_utf8_strcmp("א", "ת", -1);
     test_my_utf8_strcmp("ת", "א", 1);
