@@ -5,21 +5,21 @@
 #include <stdlib.h>
 
 // Function Declarations
-int my_utf8_encode(unsigned char *input, unsigned char *output);
-int my_utf8_decode(unsigned char *input, unsigned char *output);
-int my_utf8_check(unsigned char *string);
-int my_utf8_strlen(unsigned char *string);
-unsigned char *my_utf8_charat(unsigned char *string, int index);
-int my_utf8_strcmp(unsigned char *string1, unsigned char *string2);
-int my_utf8_gematria_decode(int g, unsigned char *output);             // extra function
-int my_utf8_gematria_encode(unsigned char *input);                     // extra function
-int my_utf8_numbytes(unsigned char *c);                                // extra function
-int my_utf8_validHex(unsigned char c);                                 // extra function, demonstrated use in encode
-int my_utf8_printHex(unsigned char *string, int rep);                  // extra function, demonstrated use in test funcs
-int my_utf8_print_conversion_table();                                  // extra function, printed at the top of main
-int my_strlen(unsigned char *string);
+int my_utf8_encode(unsigned char *input, unsigned char *output);       // line 55
+int my_utf8_decode(unsigned char *input, unsigned char *output);       // line 142
+int my_utf8_check(unsigned char *string);                              // line 270
+int my_utf8_strlen(unsigned char *string);                             // line 310
+unsigned char *my_utf8_charat(unsigned char *string, int index);       // line 332
+int my_utf8_strcmp(unsigned char *string1, unsigned char *string2);    // line 376
+int my_utf8_gematria_decode(int g, unsigned char *output);             // line 416: extra function
+int my_utf8_gematria_encode(unsigned char *input);                     // line 440: extra function
+int my_utf8_numbytes(unsigned char *c);                                // line 478: extra function
+int my_utf8_validHex(unsigned char c);                                 // line 494: extra function, demonstrated use in encode
+int my_utf8_printHex(unsigned char *string, int rep);                  // line 508: extra function, demonstrated use in test funcs
+int my_utf8_print_conversion_table();                                  // line 525: extra function, printed at the top of main
+int my_strlen(unsigned char *string);                                  // line 547
 
-int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;
+int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                           // line 561: test functions
 int test_pass_fail(void);
 int test_header(char* func);
 int my_utf8_encode_tests(void);
@@ -438,17 +438,23 @@ int my_utf8_gematria_decode(int g, unsigned char *output){
 
 // Given a UTF8 encoded Hebrew string, return the corresponding gematria
 int my_utf8_gematria_encode(unsigned char *input){
-    int byte2, base = 0x8F, ch, count = 1, incr = 1;
+    int byte2, base = 0x8F, ch, count, incr, total = 0;
     static int offset = 0;
     // Loop through the string
-    if (*input != '\0') {
+    while (*input != '\0') {
+        // allow for spaces
+        if (*input == ' ') {
+            input++;
+            if (*input == '\0') break;
+        }//end if
         // Make sure input is within the range {0xD7, 0x90} - {0xD7, 0xAF}
         if (my_utf8_check(input) == 0) return 0;
         if (my_utf8_numbytes(input) != 2) return 0;
         byte2 = *(input+1);
-        printf("0x%x\n", byte2);
         if ((*input < 0xD7) && (byte2 < 0x90 || byte2 > 0xAF)) return 0;
 
+        count = 1;
+        incr = 1;
         ch = byte2 - base - offset;
         for (int i = 1; i < ch; i++) {
             count += incr;
@@ -458,13 +464,14 @@ int my_utf8_gematria_encode(unsigned char *input){
                 incr = 10;
             }
             if (count == 100) {
-                count = 200;
                 incr = 100;
             }
         }//end for
-
-    }//end if
-    return count;
+        total += count;
+        if (*(input+1) == '\0') break;
+        input += 2;
+    }//end while
+    return total;
 }// end my_utf8_hebrew
 
 // Takes in a UTF-8 encoded character pointer and returns the number of bytes in that character
@@ -867,12 +874,20 @@ int my_utf8_gematria_encode_tests(void) {
             incr = 10;
         }
         if (g == 100) {
-            g = 200;
             incr = 100;
         }
     }//end for
 
-    // Test for invalid index
+    // Test for words in Hebrew
+    test_my_utf8_gematria_encode("אבג", 6);
+    test_my_utf8_gematria_encode("שמים", 390);
+    test_my_utf8_gematria_encode("לב", 32);
+    test_my_utf8_gematria_encode("אם אמא", 83);
+    test_my_utf8_gematria_encode("אני אוהב מדעי המחשב", 554);
+    test_my_utf8_gematria_encode("יוצר אור ובורא חושך", 1062);
+
+
+    // Test for invalid input
     test_my_utf8_gematria_encode("Hello", 0);
     test_my_utf8_gematria_encode("A", 0);
     test_my_utf8_gematria_encode("ஃபூபா", 0);
