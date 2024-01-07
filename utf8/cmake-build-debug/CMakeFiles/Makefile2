@@ -80,12 +80,12 @@ clean: CMakeFiles/utf8.dir/clean
 CMakeFiles/utf8.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utf8.dir\build.make CMakeFiles/utf8.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utf8.dir\build.make CMakeFiles/utf8.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\chaya\GitHub\UTF8-C-Encoding\utf8\cmake-build-debug\CMakeFiles --progress-num=1,2,3 "Built target utf8"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\chaya\GitHub\UTF8-C-Encoding\utf8\cmake-build-debug\CMakeFiles --progress-num=1,2 "Built target utf8"
 .PHONY : CMakeFiles/utf8.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/utf8.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\chaya\GitHub\UTF8-C-Encoding\utf8\cmake-build-debug\CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\chaya\GitHub\UTF8-C-Encoding\utf8\cmake-build-debug\CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/utf8.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\chaya\GitHub\UTF8-C-Encoding\utf8\cmake-build-debug\CMakeFiles 0
 .PHONY : CMakeFiles/utf8.dir/rule

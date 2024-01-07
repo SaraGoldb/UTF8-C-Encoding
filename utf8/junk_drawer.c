@@ -147,3 +147,116 @@ int EOS(unsigned char c) {
 //    }//end if
 //    return count;
 //}// end my_utf8_hebrew
+
+//
+//int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
+//    int numbytes1, numbytes2;
+//    // Loop through the string
+//    while (*string1 != '\0' && *string2 != '\0') {
+//        numbytes1 = my_utf8_numbytes(string1);
+//        numbytes2 = my_utf8_numbytes(string2);
+//        // If string1's current character has more bytes than string2's, string1 is  lexicographically larger
+//        if (numbytes1 > numbytes2)
+//            return 1;
+//        // If string1's current character has less bytes than string2's, string1 is  lexicographically smaller
+//        if (numbytes1 < numbytes2)
+//            return -1;
+//        // If string1 and string2's current characters have the same number of bytes
+//        // compare the character per byte
+//        if (numbytes1 == numbytes2) {
+//            for (int i = 1; i <= numbytes1; i++) {
+//                if (*string1 > *string2)
+//                    return 1;
+//                if (*string1 < *string2)
+//                    return -1;
+//                string1++;
+//                string2++;
+//            }//end for
+//        }//end if ==
+//    }//end while
+//
+//    // if we fall out of the loop it means all characters checked are the same, and either;
+//    // the strings are equal length, return 0
+//    // string1 is longer than string2, return 1
+//    // string1 is shorter than string2, return -1
+//    printf("%c, %c\n", *string1, *string2);
+//    if (*string1 == '\0' && *string2 == '\0') {
+//        printf("same len\n");
+//        return 0;
+//    }
+//    if (*string2 == '\0') {
+//        printf("string 2 shorter\n");
+//        return 1;
+//    }
+//    if (*string1 == '\0') {
+//        printf("string 1 shorter\n");
+//        return -1;
+//    }
+//    return 2; //function should never return 2
+//}//end my_utf8_strcmp
+
+//// Given an int, return a UTF8 encoded Hebrew character that corresponds to that int (i.e. its gematria)
+//int my_utf8_gematria_decode(int ind, unsigned char *output, int *g){
+//    unsigned int base = 0x8F;
+//    // Make sure ind is a valid index
+//    if ((ind < 1) || (ind > 27)) {
+//        // If invalid, function returns 0x0
+//        output[0] = '0';
+//        output[1] = '\0';
+//        output[2] = '\0';
+//        return 0; //invalid input
+//    }//end if invalid
+//    // The first byte will always be 0xD7
+//    output[0] = 0xD7;
+//    // We need to account for final letters, which should be skipped over
+//    if (ind > 10) base++; //=10
+//    if (ind > 13) base++;
+//    if (ind > 15) base++;
+//    if (ind > 19) base++;
+//    if (ind > 21) base++;
+////    if (ind > 90) base+=100;
+//    output[1] = (base + ind);
+//    output[2] = '\0';
+//    return 1;
+//}// end my_utf8_hebrew
+
+
+//int test_my_utf8_gematria_decode(int ind, int g, unsigned char *expected, int *exp_g) {
+//    // Initialize an output string and invoke the function
+//    unsigned char output[3];
+//    my_utf8_gematria_decode(ind, output, g);
+//    // Print the input, output, and expected output
+//    printf("Index: %d\nCharacter:   ", ind);
+//    my_utf8_printHex(output, 1);
+//    printf("Gematria: %d\nExpected: ", g);
+//    my_utf8_printHex(expected, 1);
+//    printf("             %d\n", exp_g);
+//    // print a line of '-' and assert if output matched expected output
+//    int match = my_utf8_strcmp(expected, output);
+//    match == 0 ? NUM_PASS++ : NUM_FAIL++;          // increment pass/fail counters
+//    for (int i = 0; i < BUFFER; i++)
+//        printf("-");
+//    printf(" %s\n", match == 0 ? "PASSED" : "FAILED");
+//    return 0;
+//}//end test_my_utf8_gematria_decode
+//int my_utf8_gematria_decode_tests(void) {
+//    test_header("my_utf8_gematria_tests");
+//    // Initialize the base UTF8 character, Aleph
+//    char base[3] = {0xD7, 0x90, 0x0};
+//    // Test for the aleph-bet
+//    int incr = 1;
+//    for (int i = 1; i < 28; i++) {
+//        test_my_utf8_gematria_decode(i, base);
+//        base[1]++;
+//        if (i == 10 || i == 13|| i == 15 || i == 19 || i == 21) base[1]+=incr;
+////        if (i == 11) {
+////            incr = 10;
+////        }
+////        if (i == 100) {
+////            incr = 100;
+////        }
+//    }//end test
+//    // Test for invalid index
+//    test_my_utf8_gematria_decode(28, "0");
+//    test_my_utf8_gematria_decode(770, "0");
+//}//end my_utf8_gematria_decode_tests

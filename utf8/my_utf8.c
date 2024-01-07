@@ -54,9 +54,9 @@ int main() {
 // scheme notation, and returns a UTF8 encoded string.
 int my_utf8_encode(unsigned char *input, unsigned char *output) {
     int index = 0, limit = 0, i = 0;
-    unsigned char next;
+    unsigned char next = 0;
     unsigned char unicodeString[9];
-    unsigned int unicode;
+    unsigned int unicode = 0;
     // Loop through the string
     while (*input != '\0') {
         // Save a pointer to the next byte
@@ -374,30 +374,15 @@ unsigned char *my_utf8_charat(unsigned char *string, int index) {
 // Returns whether the two strings are the same (similar result set to strcmp() )
 // Returns 0 if they are equal, 1 if string1 > string2, and -1 if str1 < str2
 int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
-    int numbytes1, numbytes2;
     // Loop through the string
     while (*string1 != '\0' && *string2 != '\0') {
-        numbytes1 = my_utf8_numbytes(string1);
-        numbytes2 = my_utf8_numbytes(string2);
-        // If string1's current character has more bytes than string2's, string1 is  lexicographically larger
-        if (numbytes1 > numbytes2)
+        if (*string1 > *string2)
             return 1;
-        // If string1's current character has less bytes than string2's, string1 is  lexicographically smaller
-        if (numbytes1 < numbytes2)
+        if (*string1 < *string2)
             return -1;
-        // If string1 and string2's current characters have the same number of bytes
-        // compare the character per byte
-        if (numbytes1 == numbytes2) {
-            for (int i = 1; i <= numbytes1; i++) {
-                if (*string1 > *string2)
-                    return 1;
-                if (*string1 < *string2)
-                    return -1;
-                string1++;
-                string2++;
-            }//end for
-        }//end if ==
-    }//end while
+        string1++;
+        string2++;
+    }
 
     // if we fall out of the loop it means all characters checked are the same, and either;
     // the strings are equal length, return 0
@@ -511,9 +496,9 @@ int my_utf8_printHex(unsigned char *string, int rep) {
     if (rep)
         printf("%s ", string);
     printf("{");
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i <= length; i++) {
         printf("0x%X", (unsigned char) string[i]);
-        if (i < length-1) // fencepost to avoid trailing ", "
+        if (i < length) // fencepost to avoid trailing ", "
             printf(", ");
     }//end for
     printf("} ");
@@ -589,7 +574,7 @@ int test_my_utf8_encode(unsigned char *input, unsigned char *expected) { //, int
     printf("\n");
     // print a line of '-' and assert if output matched expected output
     int match = my_utf8_strcmp(expected, output);
-//    match == 0 ? NUM_PASS++ : NUM_FAIL++;          // increment pass/fail counters
+    match == 0 ? NUM_PASS++ : NUM_FAIL++;          // increment pass/fail counters
     for (int i = 0; i < BUFFER; i++)
         printf("-");
     printf(" %s\n", match == 0 ? "PASSED" : "FAILED");
@@ -760,6 +745,7 @@ int test_my_utf8_charat(unsigned char *string, int index, unsigned char *expecte
 int my_utf8_charat_tests(){
     test_header("my_utf8_charat");
     test_my_utf8_charat("Unicorn", 8, NULL);
+    test_my_utf8_charat("Unicorn", 2, "i");
     test_my_utf8_charat("Unicorn \U0001F984 ", 16, NULL);
     test_my_utf8_charat("Hello World", -1, NULL);
     test_my_utf8_charat("שרהלה", 4, "ה");
