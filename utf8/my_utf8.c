@@ -11,15 +11,15 @@ int my_utf8_check(unsigned char *string);                              // line 2
 int my_utf8_strlen(unsigned char *string);                             // line 310
 unsigned char *my_utf8_charat(unsigned char *string, int index);       // line 332
 int my_utf8_strcmp(unsigned char *string1, unsigned char *string2);    // line 376
-int my_utf8_gematria_decode(int g, unsigned char *output);             // line 416: extra function
-int my_utf8_gematria_encode(unsigned char *input);                     // line 440: extra function
-int my_utf8_numbytes(unsigned char *c);                                // line 478: extra function
-int my_utf8_validHex(unsigned char c);                                 // line 494: extra function, demonstrated use in encode
-int my_utf8_printHex(unsigned char *string, int rep);                  // line 508: extra function, demonstrated use in test funcs
-int my_utf8_print_conversion_table();                                  // line 525: extra function, printed at the top of main
-int my_strlen(unsigned char *string);                                  // line 547
+int my_utf8_gematria_decode(int g, unsigned char *output);             // line 401: extra function
+int my_utf8_gematria_encode(unsigned char *input);                     // line 430: extra function
+int my_utf8_numbytes(unsigned char *c);                                // line 468: extra function
+int my_utf8_validHex(unsigned char c);                                 // line 484: extra function, demonstrated use in encode
+int my_utf8_printHex(unsigned char *string, int rep);                  // line 498: extra function, demonstrated use in test funcs
+int my_utf8_print_conversion_table();                                  // line 515: extra function, printed at the top of main
+int my_strlen(unsigned char *string);                                  // line 537
 
-int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                           // line 561: test functions
+int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                           // line 551: test functions
 int test_pass_fail(void);
 int test_header(char* func);
 int my_utf8_encode_tests(void);
@@ -33,17 +33,17 @@ int my_utf8_gematria_encode_tests(void);
 int my_utf8_numbytes_tests(void);
 
 int main() {
-//    my_utf8_print_conversion_table();
+   my_utf8_print_conversion_table();
 
-//    my_utf8_encode_tests();              // Test encode
-//    my_utf8_decode_tests();              // Test decode
-//    my_utf8_check_tests();               // Test check
-//    my_utf8_strlen_tests();              // Test strlen
-//    my_utf8_charat_tests();              // Test charat
-//    my_utf8_strcmp_tests();              // Test strcmp
+   my_utf8_encode_tests();              // Test encode
+   my_utf8_decode_tests();              // Test decode
+   my_utf8_check_tests();               // Test check
+   my_utf8_strlen_tests();              // Test strlen
+   my_utf8_charat_tests();              // Test charat
+   my_utf8_strcmp_tests();              // Test strcmp
     my_utf8_gematria_decode_tests();     // Test gematria decode
-//    my_utf8_gematria_encode_tests();     // Test gematria encode
-//    my_utf8_numbytes_tests();            // Test numbytes
+   my_utf8_gematria_encode_tests();     // Test gematria encode
+   my_utf8_numbytes_tests();            // Test numbytes
 
     printf("\n");                // PASS/FAIL message
     test_pass_fail();
@@ -399,7 +399,6 @@ int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
 
 // Given an int, return a UTF8 encoded Hebrew character that corresponds to that int (i.e. its gematria)
 int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
-    printf("Input %d\n", g);
     unsigned int base = 0x8F;
     // Make sure g is a valid gematria, in the range [1-10], 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400
     if ((g < 1) || ((g > 10) && (g%10 != 0) && (g%100 != 0)) || (g > 400)) {
