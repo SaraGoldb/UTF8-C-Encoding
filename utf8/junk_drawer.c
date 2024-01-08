@@ -5,7 +5,8 @@
 #include <stdio.h>
 
 int main() {
-    printf("%d  %d", 25/10, (int)25/10);
+    char *output = NULL;
+    printf("%s", output);
     return 0;
 }//end main
 

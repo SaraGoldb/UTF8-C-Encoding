@@ -5,21 +5,21 @@
 #include <stdlib.h>
 
 // Function Declarations
-int my_utf8_encode(unsigned char *input, unsigned char *output);       // line 55
-int my_utf8_decode(unsigned char *input, unsigned char *output);       // line 142
-int my_utf8_check(unsigned char *string);                              // line 270
-int my_utf8_strlen(unsigned char *string);                             // line 310
-unsigned char *my_utf8_charat(unsigned char *string, int index);       // line 332
-int my_utf8_strcmp(unsigned char *string1, unsigned char *string2);    // line 376
-int my_utf8_gematria_decode(int g, unsigned char *output);             // line 402: extra function
-int my_utf8_gematria_encode(unsigned char *input);                     // line 487: extra function
-int my_utf8_numbytes(unsigned char *c);                                // line 525: extra function
-int my_utf8_validHex(unsigned char c);                                 // line 541: extra function, demonstrated use in encode
-int my_utf8_printHex(unsigned char *string, int rep);                  // line 555: extra function, demonstrated use in test funcs
-int my_utf8_print_conversion_table();                                  // line 572: extra function, printed at the top of main
-int my_strlen(unsigned char *string);                                  // line 594
+int my_utf8_encode(unsigned char *input, unsigned char *output);                 // line 55
+int my_utf8_decode(unsigned char *input, unsigned char *output);                 // line 142
+int my_utf8_check(unsigned char *string);                                        // line 270
+int my_utf8_strlen(unsigned char *string);                                       // line 310
+int my_utf8_charat(unsigned char *string, int index, unsigned char *output);     // line 335
+int my_utf8_strcmp(unsigned char *string1, unsigned char *string2);              // line 389
+int my_utf8_gematria_decode(int g, unsigned char *output);                       // line 452: extra function
+int my_utf8_gematria_encode(unsigned char *input);                               // line 500: extra function
+int my_utf8_numbytes(unsigned char *c);                                          // line 538: extra function
+int my_utf8_validHex(unsigned char c);                                           // line 554: extra function, demonstrated use in encode
+int my_utf8_printHex(unsigned char *string, int rep);                            // line 568: extra function, demonstrated use in test funcs
+int my_utf8_print_conversion_table();                                            // line 590: extra function, printed at the top of main
+int my_strlen(unsigned char *string);                                            // line 612
 
-int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                           // line 608: test functions
+int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                                     // line 626: test functions
 int test_pass_fail(void);
 int test_header(char* func);
 int my_utf8_encode_tests(void);
@@ -308,6 +308,9 @@ int my_utf8_check(unsigned char *string) {
 
 // Returns the number of characters in the string.
 int my_utf8_strlen(unsigned char *string) {
+    // If input is null return 0
+    if (string == (void *)0) return 0;
+
     int count = 0;
     // Loop through the string
     // If we've encountered a character larger than 1 byte
@@ -328,52 +331,70 @@ int my_utf8_strlen(unsigned char *string) {
 }//end my_utf8_strlen
 
 // Returns the UTF8 encoded character at the location specified.
-// If the input string is improperly encoded, this function returns NULL to indicate an error.
-unsigned char *my_utf8_charat(unsigned char *string, int index) {
+// If the input string is improperly encoded, this function returns "\0" to indicate an error.
+int my_utf8_charat(unsigned char *string, int index, unsigned char *output) {
     // If index is out of range return NULL
-    if ((index >= my_utf8_strlen(string)) || (index < 0))
-        return NULL;
+    if ((index >= my_utf8_strlen(string)) || (index < 0)) {
+        output[0] = '\0';
+        return 0;
+    }
 
-    unsigned char output[7];
     // increment string to point to the index position of the character we want to return
-    string += index;
+    while (index > 0) {
+        if (*string <= 0x7F) {                 // jump 1 byte
+            string++;
+        } else if ((*string & 0xE0) == 0xC0) { // jump 2 bytes
+            string+=2;
+        } else if ((*string & 0xF0) == 0xE0) { // jump 3 bytes
+            string+=3;
+        } else if ((*string & 0xF8) == 0xF0) { // jump 4 bytes
+            string+=4;
+        }//end if else
+        index--; // index only gets decremented once per character
+    }//end while
+
     // Determine the number of bytes and append accordingly
     int bytes = my_utf8_numbytes(string);  // What a helpful function!!
-    unsigned char *ptr;
     switch (bytes) {
         case 1:                      // 1 byte
             output[0] = *string;
             output[1] = '\0';
-            ptr = output;
-            return ptr;
+            return 1;
         case 2:                      //2 bytes
             output[0] = *string++;
             output[1] = *string;
             output[2] = '\0';
-            ptr = output;
-            return ptr;
+            return 1;
         case 3:                      // 3 bytes
             output[0] = *string++;
             output[1] = *string++;
             output[3] = *string;
             output[4] = '\0';
-            ptr = output;
-            return ptr;
+            return 1;
         case 4:                      // 4 bytes
             output[0] = *string++;
             output[1] = *string++;
             output[2] = *string++;
             output[3] = *string;
             output[4] = '\0';
-            ptr = output;
-            return ptr;
+            return 1;
+        default:
+            output[0] = '\0';
+            return 0;
     }//end switch
-    return NULL;
-}
+}//end my_utf8_charat
 
 // Returns whether the two strings are the same (similar result set to strcmp() )
 // Returns 0 if they are equal, 1 if string1 > string2, and -1 if str1 < str2
 int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
+    // ensure strings are not void
+    if (string1 == (void *)0 && string2 == (void *)0)
+        return 0;
+    if (string1 == (void *)0)
+        return -1;
+    if (string2 == (void *)0)
+        return 1;
+
     // Loop through the string
     while (*string1 != '\0' && *string2 != '\0') {
         if (*string1 > *string2)
@@ -428,13 +449,11 @@ int my_utf8_gematria_decode_helper(int g, unsigned char *output) {
     return 1; // successful decode
 }//end my_utf8_gematria_decode_helper
 
-int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
+int my_utf8_gematria_decode(int g, unsigned char *output) {
     // Make sure g is a valid gematria, in the range [1-400]
     if ((g < 1) || (g >= 500)) {
-        // If invalid, function returns 0x0
-        output[0] = '0';
-        output[1] = '\0';
-        output[2] = '\0';
+        // If invalid, function returns "\0"
+        output[0] = '\0';
         return 0; //invalid input
     }//end if invalid
 
@@ -452,18 +471,15 @@ int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
 
     // Otherwise, if g is greater than 100 and is not a multiple of 100, we need to return a string of three characters
     if ((g > 10) && (g < 100) && (g%10 != 0)) {
-        printf("MID RANGE\n");
         // The first two indices of output will be the 10's place digit of g
         my_utf8_gematria_decode_helper(g/10 * 10, output);
         // The second two indices of output will be the 1's place digit of g
         my_utf8_gematria_decode_helper(g%10, output+2);
-        printf("output after decode: %s\n", output);
         return 1; // successful decode
     }//end if 3 character compound gematria
 
     // Otherwise, if g is greater than 10 and is not a multiple of 10, we need to return a string of 2 characters
     if (g > 100 && g%100 != 0) {
-        printf("HIGH RANGE\n");
         // The first two indices of output will be the 100's place digit of g
         my_utf8_gematria_decode_helper(g - (g%100), output);
         // The second two indices of output will be the 10's place digit of g
@@ -471,14 +487,11 @@ int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
         // The second two indices of output will be the 1's place digit of g
         if (!nonzero) output-=2;
         my_utf8_gematria_decode_helper(g%10, output+4);
-        printf("output after decode: %s\n", output);
         return 1; // successful decode
     }//end if 2 character compound gematria
 
     // Otherwise, g corresponds to a single character
-    printf("REG RANGE\n");
     my_utf8_gematria_decode_helper(g, output);
-    printf("output after decode: %s\n", output);
     return 1; // successful decode
 
 }// end my_utf8_hebrew
@@ -553,6 +566,11 @@ int my_utf8_validHex(unsigned char c) {
 
 // Given a UTF8 encoded string print the hexidecimal values in an organized way
 int my_utf8_printHex(unsigned char *string, int rep) {
+    if (string == (void *)0) {
+        printf("{ NULL }");
+        return 0;
+    }
+    // print the hex values at each element of the string array
     int length = my_strlen(string);
     // include string representation
     if (rep)
@@ -791,10 +809,14 @@ int my_utf8_strlen_tests() {
 
 int test_my_utf8_charat(unsigned char *string, int index, unsigned char *expected) {
     // Initialize an output string and invoke the function
-    unsigned char *output;
-    output = my_utf8_charat(string, index);
+    unsigned char output[5];
+    my_utf8_charat(string, index, output);
     int match;
-    printf("Input: %s\nIndex: %d\nOutput:   %s\nExpected: %s\n", string, index, output, expected);
+    printf("Input: %s\nIndex: %d\nOutput:   %s ", string, index, output);
+    my_utf8_printHex(output, 0);
+    printf("\nExpected: %s ", expected);
+    my_utf8_printHex(expected, 0);
+    printf("\n");
     // print a line of '-' and assert if output matched expected output
     if (output == NULL)  match = (expected == NULL ? 0 : 1);       // if output is NULL don't enter my_utf8_strcmp
     else                 match = my_utf8_strcmp(expected, output);
@@ -806,15 +828,18 @@ int test_my_utf8_charat(unsigned char *string, int index, unsigned char *expecte
 }//end test_my_utf8_charat
 int my_utf8_charat_tests(){
     test_header("my_utf8_charat");
-    test_my_utf8_charat("Unicorn", 8, NULL);
     test_my_utf8_charat("Unicorn", 2, "i");
-    test_my_utf8_charat("Unicorn \U0001F984 ", 16, NULL);
-    test_my_utf8_charat("Hello World", -1, NULL);
     test_my_utf8_charat("שרהלה", 4, "ה");
+    test_my_utf8_charat("Unicorn", 8, "\0");
+    test_my_utf8_charat("Unicorn \U0001F984 ", 16, "\0");
+    test_my_utf8_charat("Hello World", -1, "\0");
+    test_my_utf8_charat("Money \u0024 Money", 15, "\0");
     test_my_utf8_charat("Aleph \u05D0 ", 6, "\u05D0");
     test_my_utf8_charat("Money \u0024 ", 6, "\u0024");
     test_my_utf8_charat("\u0024 Money", 0, "\u0024");
-    test_my_utf8_charat("Money \u0024 Money", 15, NULL);
+    test_my_utf8_charat("Aleph \u05D0 Beis \u05D1 Gimmel \u05D2", 22, "\u05D2");
+    test_my_utf8_charat("A mixed \u0460 byte range \u0c8a won't break \U0001f4AA this function! \U0001f973", 35, "\U0001F4AA");
+    test_my_utf8_charat("A mixed \u0460 byte range \u0c8a won't break \U0001f4AA this function! \U0001f973", 42, "f");
 }//end my_utf8_charat_tests
 
 int test_my_utf8_strcmp(unsigned char *string1, unsigned char *string2, int expected) {
@@ -899,7 +924,7 @@ int my_utf8_gematria_decode_tests(void) {
             incr = 100;
         }
         if (g > 400) {
-            base[0] = '0';
+            base[0] = '\0';
             base[1] = '\0';
         }
         test_my_utf8_gematria_decode(g, base);
@@ -941,11 +966,11 @@ int my_utf8_gematria_decode_tests(void) {
     test_my_utf8_gematria_decode(411, "תיא");
     test_my_utf8_gematria_decode(466, "תסו");
     test_my_utf8_gematria_decode(499, "תצט");
-    test_my_utf8_gematria_decode(501, "0");
-    test_my_utf8_gematria_decode(510, "0");
-    test_my_utf8_gematria_decode(511, "0");
-    test_my_utf8_gematria_decode(600, "0");
-    test_my_utf8_gematria_decode(770, "0");
+    test_my_utf8_gematria_decode(501, "\0");
+    test_my_utf8_gematria_decode(510, "\0");
+    test_my_utf8_gematria_decode(511, "\0");
+    test_my_utf8_gematria_decode(600, "\0");
+    test_my_utf8_gematria_decode(770, "\0");
 }//end my_utf8_gematria_decode_tests
 
 int test_my_utf8_gematria_encode(unsigned char *input, int expected) {
