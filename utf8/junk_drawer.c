@@ -5,10 +5,11 @@
 #include <stdio.h>
 
 int main() {
-    unsigned char aleph[3] = {0xD7, 0x90, 0x0};
-    unsigned char *ptr = aleph;
-    unsigned int next = *(ptr+1);
-    printf("%s %X, %d\n", aleph, next, next < 0x90 || next > 0xAF);
+    for (int i = 0; i < 21; i++) {
+        if (i==5) i+=10;
+        printf("%d\n", i);
+
+    }
     return 0;
 }
 

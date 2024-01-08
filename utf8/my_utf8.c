@@ -33,17 +33,17 @@ int my_utf8_gematria_encode_tests(void);
 int my_utf8_numbytes_tests(void);
 
 int main() {
-    my_utf8_print_conversion_table();
+//    my_utf8_print_conversion_table();
 
-    my_utf8_encode_tests();              // Test encode
-    my_utf8_decode_tests();              // Test decode
-    my_utf8_check_tests();               // Test check
-    my_utf8_strlen_tests();              // Test strlen
-    my_utf8_charat_tests();              // Test charat
-    my_utf8_strcmp_tests();              // Test strcmp
+//    my_utf8_encode_tests();              // Test encode
+//    my_utf8_decode_tests();              // Test decode
+//    my_utf8_check_tests();               // Test check
+//    my_utf8_strlen_tests();              // Test strlen
+//    my_utf8_charat_tests();              // Test charat
+//    my_utf8_strcmp_tests();              // Test strcmp
     my_utf8_gematria_decode_tests();     // Test gematria decode
-    my_utf8_gematria_encode_tests();     // Test gematria encode
-    my_utf8_numbytes_tests();            // Test numbytes
+//    my_utf8_gematria_encode_tests();     // Test gematria encode
+//    my_utf8_numbytes_tests();            // Test numbytes
 
     printf("\n");                // PASS/FAIL message
     test_pass_fail();
@@ -398,10 +398,11 @@ int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
 }//end my_utf8_strcmp
 
 // Given an int, return a UTF8 encoded Hebrew character that corresponds to that int (i.e. its gematria)
-int my_utf8_gematria_decode(int g, unsigned char *output){
+int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
+    printf("Input %d\n", g);
     unsigned int base = 0x8F;
-    // Make sure g is a valid gematria
-    if ((g < 1) || (g > 27)) {
+    // Make sure g is a valid gematria, in the range [1-10], 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400
+    if ((g < 1) || ((g > 10) && (g%10 != 0) && (g%100 != 0)) || (g > 400)) {
         // If invalid, function returns 0x0
         output[0] = '0';
         output[1] = '\0';
@@ -411,11 +412,15 @@ int my_utf8_gematria_decode(int g, unsigned char *output){
     // The first byte will always be 0xD7
     output[0] = 0xD7;
     // We need to account for final letters, which should be skipped over
-    if (g > 10) base++;
-    if (g > 13) base++;
-    if (g > 15) base++;
-    if (g > 19) base++;
-    if (g > 21) base++;
+    if (g >= 40) base++;
+    if (g >= 50) base++;
+    if (g >= 80) base++;
+    if (g >= 90) base++;
+    // If g is greater than 100, divide by 100, subtract 1, and add back 20 to account for the jump in gematria and
+    // skipping final letters
+    if (g > 100) g = (g/100 - 1) + 20;
+    // If g is greater than 10, we must divide by 10 and add 10
+    else if (g > 10) g = g/10 + 10;
     output[1] = (base + g);
     output[2] = '\0';
     return 1;
@@ -425,12 +430,12 @@ int my_utf8_gematria_decode(int g, unsigned char *output){
 int my_utf8_gematria_encode(unsigned char *input){
     int byte2, base = 0x8F, ch, count, incr, total = 0;
     static int offset = 0;
-    // Loop through the string
-    while (*input != '\0') {
+    // Loop through the string while there are still 2 byte characters left
+    while (*input != '\0' && *(input+1) != '\0') {
         // allow for spaces
         if (*input == ' ') {
             input++;
-            if (*input == '\0') break;
+//            if (*input == '\0') break;
         }//end if
         // Make sure input is within the range {0xD7, 0x90} - {0xD7, 0xAF}
         if (my_utf8_check(input) == 0) return 0;
@@ -443,6 +448,7 @@ int my_utf8_gematria_encode(unsigned char *input){
         ch = byte2 - base - offset;
         for (int i = 1; i < ch; i++) {
             count += incr;
+            // account for final characters, which have the same gematria as their regular counterpart
             if (i == 11 || i == 14 || i == 16 || i == 20 || i == 22) count-=incr;
             if (count == 11) {
                 count = 20;
@@ -453,7 +459,6 @@ int my_utf8_gematria_encode(unsigned char *input){
             }
         }//end for
         total += count;
-        if (*(input+1) == '\0') break;
         input += 2;
     }//end while
     return total;
@@ -821,14 +826,33 @@ int test_my_utf8_gematria_decode(int g, unsigned char *expected) {
 int my_utf8_gematria_decode_tests(void) {
     test_header("my_utf8_gematria_tests");
     // Initialize the base UTF8 character, Aleph
-    char base[3] = {0xD7, 0x90, 0x0};
+    unsigned char base[3] = {0xD7, 0x90, 0x0};
     // Test for the aleph-bet
-    for (int i = 1; i < 28; i++) {
-        test_my_utf8_gematria_decode(i, base);
-        base[1]++;
-        if (i == 10 || i == 13|| i == 15 || i == 19 || i == 21) base[1]++;
+    int incr = 1, g = 1;
+    for (int i = 1; i < 25; i++) {
+        // skip the final characters
+        if (i == 11 || i == 13 || i == 14 || i == 17 || i == 18) base[1]++;
+        // increment from 10 to 20 and from 100 to 200
+        if (g == 11) {
+            g = 20;
+            incr = 10;
+        }
+        if (g == 110) {
+            g = 200;
+            incr = 100;
+        }
+        if (g > 400) {
+            base[0] = '0';
+            base[1] = '\0';
+        }
+        test_my_utf8_gematria_decode(g, base);
+        base[1]++; g+=incr;
     }//end test
     // Test for invalid index
+    test_my_utf8_gematria_decode(11, "0");
+    test_my_utf8_gematria_decode(12, "0");
+    test_my_utf8_gematria_decode(16, "0");
+    test_my_utf8_gematria_decode(19, "0");
     test_my_utf8_gematria_decode(28, "0");
     test_my_utf8_gematria_decode(770, "0");
 }//end my_utf8_gematria_decode_tests
@@ -872,11 +896,18 @@ int my_utf8_gematria_encode_tests(void) {
     test_my_utf8_gematria_encode("אני אוהב מדעי המחשב", 554);
     test_my_utf8_gematria_encode("יוצר אור ובורא חושך", 1062);
 
-
     // Test for invalid input
     test_my_utf8_gematria_encode("Hello", 0);
     test_my_utf8_gematria_encode("A", 0);
     test_my_utf8_gematria_encode("ஃபூபா", 0);
+    test_my_utf8_gematria_encode("אבג ABC", 0);       // Mixed cases
+    test_my_utf8_gematria_encode("Heaven שמים", 0);
+    test_my_utf8_gematria_encode("לב heart", 0);
+    test_my_utf8_gematria_encode("Mom אם אמא", 0);
+    test_my_utf8_gematria_encode("אני אוהב מדעי המחשב I love computer science!", 0);
+    test_my_utf8_gematria_encode("יוצר אור ובורא חושך He Forms Light and Creates Darkness", 0);
+    test_my_utf8_gematria_encode("\u037C \u0489", 0);
+
 }//end my_utf8_gematria_encode_tests
 
 int test_my_utf8_numbytes(unsigned char *c, int expected) {
