@@ -41,7 +41,7 @@ int main() {
    my_utf8_strlen_tests();              // Test strlen
    my_utf8_charat_tests();              // Test charat
    my_utf8_strcmp_tests();              // Test strcmp
-    my_utf8_gematria_decode_tests();     // Test gematria decode
+   my_utf8_gematria_decode_tests();     // Test gematria decode
    my_utf8_gematria_encode_tests();     // Test gematria encode
    my_utf8_numbytes_tests();            // Test numbytes
 
@@ -421,15 +421,11 @@ int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
 // Given an int, return a UTF8 encoded Hebrew character that corresponds to that int (i.e. its gematria)
 // Within range [1-499]
 int my_utf8_gematria_decode_helper(int g, unsigned char *output) {
-    printf("output after helper: %d -> ", g);
     unsigned int base = 0x8F;
 
     // g is in the range [1-10], 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400
-    // if g is zero, set output to null terminator
-    if (g == 0) {
-        printf("%s ZERO\n", output);
-        return 0;
-    }//end if invalid
+    // if g is zero, return 0
+    if (g == 0) return 0;
 
     // The first byte will always be 0xD7
     output[0] = 0xD7;
@@ -445,7 +441,6 @@ int my_utf8_gematria_decode_helper(int g, unsigned char *output) {
     else if (g > 10) g = g/10 + 10;
     output[1] = (base + g);
     output[2] = '\0';
-    printf("%s\n", output);
     return 1; // successful decode
 }//end my_utf8_gematria_decode_helper
 
@@ -906,7 +901,7 @@ int test_my_utf8_gematria_decode(int g, unsigned char *expected) {
     return 0;
 }//end test_my_utf8_gematria_decode
 int my_utf8_gematria_decode_tests(void) {
-    test_header("my_utf8_gematria_tests");
+    test_header("my_utf8_gematria_decode_tests");
     // Initialize the base UTF8 character, Aleph
     unsigned char base[3] = {0xD7, 0x90, 0x0};
     // Test for the aleph-bet
@@ -986,7 +981,7 @@ int test_my_utf8_gematria_encode(unsigned char *input, int expected) {
     return 0;
 }//end test_my_utf8_gematria_encode
 int my_utf8_gematria_encode_tests(void) {
-    test_header("my_utf8_gematria_tests");
+    test_header("my_utf8_gematria_encode_tests");
     // Initialize the base UTF8 character, Aleph
     char base[3] = {0xD7, 0x90, 0x0};
     // Test for the aleph-bet
