@@ -408,6 +408,7 @@ int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
         output[2] = '\0';
         return 0; //invalid input
     }//end if invalid
+
     // The first byte will always be 0xD7
     output[0] = 0xD7;
     // We need to account for final letters, which should be skipped over
@@ -422,7 +423,7 @@ int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
     else if (g > 10) g = g/10 + 10;
     output[1] = (base + g);
     output[2] = '\0';
-    return 1;
+    return 1; // successful decode
 }// end my_utf8_hebrew
 
 // Given a UTF8 encoded Hebrew string, return the corresponding gematria
