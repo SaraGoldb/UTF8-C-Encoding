@@ -5,13 +5,9 @@
 #include <stdio.h>
 
 int main() {
-    for (int i = 0; i < 21; i++) {
-        if (i==5) i+=10;
-        printf("%d\n", i);
-
-    }
+    printf("%d  %d", 25/10, (int)25/10);
     return 0;
-}
+}//end main
 
 // Returns the amount of characters in an ASCII string
 int my_strlen(unsigned char *string) {

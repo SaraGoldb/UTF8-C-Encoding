@@ -11,15 +11,15 @@ int my_utf8_check(unsigned char *string);                              // line 2
 int my_utf8_strlen(unsigned char *string);                             // line 310
 unsigned char *my_utf8_charat(unsigned char *string, int index);       // line 332
 int my_utf8_strcmp(unsigned char *string1, unsigned char *string2);    // line 376
-int my_utf8_gematria_decode(int g, unsigned char *output);             // line 401: extra function
-int my_utf8_gematria_encode(unsigned char *input);                     // line 430: extra function
-int my_utf8_numbytes(unsigned char *c);                                // line 468: extra function
-int my_utf8_validHex(unsigned char c);                                 // line 484: extra function, demonstrated use in encode
-int my_utf8_printHex(unsigned char *string, int rep);                  // line 498: extra function, demonstrated use in test funcs
-int my_utf8_print_conversion_table();                                  // line 515: extra function, printed at the top of main
-int my_strlen(unsigned char *string);                                  // line 537
+int my_utf8_gematria_decode(int g, unsigned char *output);             // line 402: extra function
+int my_utf8_gematria_encode(unsigned char *input);                     // line 487: extra function
+int my_utf8_numbytes(unsigned char *c);                                // line 525: extra function
+int my_utf8_validHex(unsigned char c);                                 // line 541: extra function, demonstrated use in encode
+int my_utf8_printHex(unsigned char *string, int rep);                  // line 555: extra function, demonstrated use in test funcs
+int my_utf8_print_conversion_table();                                  // line 572: extra function, printed at the top of main
+int my_strlen(unsigned char *string);                                  // line 594
 
-int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                           // line 551: test functions
+int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                           // line 608: test functions
 int test_pass_fail(void);
 int test_header(char* func);
 int my_utf8_encode_tests(void);
@@ -398,15 +398,16 @@ int my_utf8_strcmp(unsigned char *string1, unsigned char *string2) {
 }//end my_utf8_strcmp
 
 // Given an int, return a UTF8 encoded Hebrew character that corresponds to that int (i.e. its gematria)
-int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
+// Within range [1-499]
+int my_utf8_gematria_decode_helper(int g, unsigned char *output) {
+    printf("output after helper: %d -> ", g);
     unsigned int base = 0x8F;
-    // Make sure g is a valid gematria, in the range [1-10], 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400
-    if ((g < 1) || ((g > 10) && (g%10 != 0) && (g%100 != 0)) || (g > 400)) {
-        // If invalid, function returns 0x0
-        output[0] = '0';
-        output[1] = '\0';
-        output[2] = '\0';
-        return 0; //invalid input
+
+    // g is in the range [1-10], 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400
+    // if g is zero, set output to null terminator
+    if (g == 0) {
+        printf("%s ZERO\n", output);
+        return 0;
     }//end if invalid
 
     // The first byte will always be 0xD7
@@ -419,11 +420,67 @@ int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
     // If g is greater than 100, divide by 100, subtract 1, and add back 20 to account for the jump in gematria and
     // skipping final letters
     if (g > 100) g = (g/100 - 1) + 20;
-    // If g is greater than 10, we must divide by 10 and add 10
+        // If g is greater than 10, we must divide by 10 and add 10
     else if (g > 10) g = g/10 + 10;
     output[1] = (base + g);
     output[2] = '\0';
+    printf("%s\n", output);
     return 1; // successful decode
+}//end my_utf8_gematria_decode_helper
+
+int my_utf8_gematria_decode(int g, unsigned char *output){ // , int *output_g
+    // Make sure g is a valid gematria, in the range [1-400]
+    if ((g < 1) || (g >= 500)) {
+        // If invalid, function returns 0x0
+        output[0] = '0';
+        output[1] = '\0';
+        output[2] = '\0';
+        return 0; //invalid input
+    }//end if invalid
+
+    // Special case: if g is 15 or 16 output differs from pattern, to avoid using the letters of G-d's name
+    if (g == 15) {
+        my_utf8_gematria_decode_helper(9, output);
+        my_utf8_gematria_decode_helper(6, output+2);
+        return 1; // successful decode
+    }//end if 15
+    if (g == 16) {
+        my_utf8_gematria_decode_helper(9, output);
+        my_utf8_gematria_decode_helper(7, output+2);
+        return 1; // successful decode
+    }//end if 16
+
+    // Otherwise, if g is greater than 100 and is not a multiple of 100, we need to return a string of three characters
+    if ((g > 10) && (g < 100) && (g%10 != 0)) {
+        printf("MID RANGE\n");
+        // The first two indices of output will be the 10's place digit of g
+        my_utf8_gematria_decode_helper(g/10 * 10, output);
+        // The second two indices of output will be the 1's place digit of g
+        my_utf8_gematria_decode_helper(g%10, output+2);
+        printf("output after decode: %s\n", output);
+        return 1; // successful decode
+    }//end if 3 character compound gematria
+
+    // Otherwise, if g is greater than 10 and is not a multiple of 10, we need to return a string of 2 characters
+    if (g > 100 && g%100 != 0) {
+        printf("HIGH RANGE\n");
+        // The first two indices of output will be the 100's place digit of g
+        my_utf8_gematria_decode_helper(g - (g%100), output);
+        // The second two indices of output will be the 10's place digit of g
+        int nonzero = my_utf8_gematria_decode_helper(((g%100)/10)*10, output+2);
+        // The second two indices of output will be the 1's place digit of g
+        if (!nonzero) output-=2;
+        my_utf8_gematria_decode_helper(g%10, output+4);
+        printf("output after decode: %s\n", output);
+        return 1; // successful decode
+    }//end if 2 character compound gematria
+
+    // Otherwise, g corresponds to a single character
+    printf("REG RANGE\n");
+    my_utf8_gematria_decode_helper(g, output);
+    printf("output after decode: %s\n", output);
+    return 1; // successful decode
+
 }// end my_utf8_hebrew
 
 // Given a UTF8 encoded Hebrew string, return the corresponding gematria
@@ -849,11 +906,45 @@ int my_utf8_gematria_decode_tests(void) {
         base[1]++; g+=incr;
     }//end test
     // Test for invalid index
-    test_my_utf8_gematria_decode(11, "0");
-    test_my_utf8_gematria_decode(12, "0");
-    test_my_utf8_gematria_decode(16, "0");
-    test_my_utf8_gematria_decode(19, "0");
-    test_my_utf8_gematria_decode(28, "0");
+    test_my_utf8_gematria_decode(11, "יא");
+    test_my_utf8_gematria_decode(12, "יב");
+    test_my_utf8_gematria_decode(13, "יג");
+    test_my_utf8_gematria_decode(14, "יד");
+    test_my_utf8_gematria_decode(15, "טו");
+    test_my_utf8_gematria_decode(16, "טז");
+    test_my_utf8_gematria_decode(17, "יז");
+    test_my_utf8_gematria_decode(18, "יח");
+    test_my_utf8_gematria_decode(19, "יט");
+    test_my_utf8_gematria_decode(25, "כה");
+    test_my_utf8_gematria_decode(39, "לט");
+    test_my_utf8_gematria_decode(43, "מג");
+    test_my_utf8_gematria_decode(57, "נז");
+    test_my_utf8_gematria_decode(66, "סו");
+    test_my_utf8_gematria_decode(72, "עב");
+    test_my_utf8_gematria_decode(83, "פג");
+    test_my_utf8_gematria_decode(99, "צט");
+    test_my_utf8_gematria_decode(101, "קא");
+    test_my_utf8_gematria_decode(110, "קי");
+    test_my_utf8_gematria_decode(111, "קיא");
+    test_my_utf8_gematria_decode(114, "קיד");
+    test_my_utf8_gematria_decode(125, "קכה");
+    test_my_utf8_gematria_decode(199, "קצט");
+    test_my_utf8_gematria_decode(201, "רא");
+    test_my_utf8_gematria_decode(210, "רי");
+    test_my_utf8_gematria_decode(211, "ריא");
+    test_my_utf8_gematria_decode(243, "רמג");
+    test_my_utf8_gematria_decode(301, "שא");
+    test_my_utf8_gematria_decode(310, "שי");
+    test_my_utf8_gematria_decode(311, "שיא");
+    test_my_utf8_gematria_decode(401, "תא");
+    test_my_utf8_gematria_decode(410, "תי");
+    test_my_utf8_gematria_decode(411, "תיא");
+    test_my_utf8_gematria_decode(466, "תסו");
+    test_my_utf8_gematria_decode(499, "תצט");
+    test_my_utf8_gematria_decode(501, "0");
+    test_my_utf8_gematria_decode(510, "0");
+    test_my_utf8_gematria_decode(511, "0");
+    test_my_utf8_gematria_decode(600, "0");
     test_my_utf8_gematria_decode(770, "0");
 }//end my_utf8_gematria_decode_tests
 
