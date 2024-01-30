@@ -19,8 +19,8 @@ int my_utf8_printHex(unsigned char *string, int rep);                           
 int my_utf8_print_conversion_table();                                            // line 590: extra function, printed at the top of main
 int my_strlen(unsigned char *string);                                            // line 612
 
-int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;                                     // line 626: test functions
-int test_pass_fail(void);
+int BUFFER = 90, NUM_PASS = 0, NUM_FAIL = 0;
+int test_pass_fail(void);                                                        // line 626: test functions
 int test_header(char* func);
 int my_utf8_encode_tests(void);
 int my_utf8_decode_tests(void);
@@ -92,7 +92,7 @@ int my_utf8_encode(unsigned char *input, unsigned char *output) {
             else {
                 if (sscanf(unicodeString, "%x", &unicode) != 1) {
                     printf("ERROR: converting unicode string to unicode hex failed\n");
-                    return 0; // function failsafe
+                    return -1; // function failsafe
                 }//end if failsafe
                 // Depending on which range the unicode falls tells us how many bytes we will need
                 // Follow the conversion formula (invoke my_utf8_print_conversion_table() to see the conversion table)
@@ -134,7 +134,7 @@ int my_utf8_encode(unsigned char *input, unsigned char *output) {
     } //end while
     // Terminate the string
     output[index] = '\0';
-    return 1; // function ran
+    return 0; // function ran
 } //end my_utf8_encode
 
 // Takes a UTF8 encoded string, and returns a string, with ASCII representation where possible, and UTF8 character
@@ -359,28 +359,28 @@ int my_utf8_charat(unsigned char *string, int index, unsigned char *output) {
         case 1:                      // 1 byte
             output[0] = *string;
             output[1] = '\0';
-            return 1;
+            return 0;
         case 2:                      //2 bytes
             output[0] = *string++;
             output[1] = *string;
             output[2] = '\0';
-            return 1;
+            return 0;
         case 3:                      // 3 bytes
             output[0] = *string++;
             output[1] = *string++;
             output[3] = *string;
             output[4] = '\0';
-            return 1;
+            return 0;
         case 4:                      // 4 bytes
             output[0] = *string++;
             output[1] = *string++;
             output[2] = *string++;
             output[3] = *string;
             output[4] = '\0';
-            return 1;
+            return 0;
         default:
             output[0] = '\0';
-            return 0;
+            return -1; // function failed
     }//end switch
 }//end my_utf8_charat
 
@@ -456,12 +456,12 @@ int my_utf8_gematria_decode(int g, unsigned char *output) {
     if (g == 15) {
         my_utf8_gematria_decode_helper(9, output);
         my_utf8_gematria_decode_helper(6, output+2);
-        return 1; // successful decode
+        return 0; // successful decode
     }//end if 15
     if (g == 16) {
         my_utf8_gematria_decode_helper(9, output);
         my_utf8_gematria_decode_helper(7, output+2);
-        return 1; // successful decode
+        return 0; // successful decode
     }//end if 16
 
     // Otherwise, if g is greater than 100 and is not a multiple of 100, we need to return a string of three characters
@@ -470,7 +470,7 @@ int my_utf8_gematria_decode(int g, unsigned char *output) {
         my_utf8_gematria_decode_helper(g/10 * 10, output);
         // The second two indices of output will be the 1's place digit of g
         my_utf8_gematria_decode_helper(g%10, output+2);
-        return 1; // successful decode
+        return 0; // successful decode
     }//end if 3 character compound gematria
 
     // Otherwise, if g is greater than 10 and is not a multiple of 10, we need to return a string of 2 characters
@@ -482,12 +482,12 @@ int my_utf8_gematria_decode(int g, unsigned char *output) {
         // The second two indices of output will be the 1's place digit of g
         if (!nonzero) output-=2;
         my_utf8_gematria_decode_helper(g%10, output+4);
-        return 1; // successful decode
+        return 0; // successful decode
     }//end if 2 character compound gematria
 
     // Otherwise, g corresponds to a single character
     my_utf8_gematria_decode_helper(g, output);
-    return 1; // successful decode
+    return 0; // successful decode
 
 }// end my_utf8_hebrew
 
